@@ -11,20 +11,30 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class Main {
 
+    String[] tableColumns;
+    ArrayList<String[]> table;
+
     public static void main(String[] args){
         Main main = new Main();
-        main.q1();
+
+        //int nationalities = main.q1();
+        //System.out.println(nationalities +" nationalities found.");
+
+        //int clubs = main.q2();
+        //System.out.println(clubs +" clubs found.");
+
+        List<String> names = main.q3();
+        System.out.println(names.size() + " names found.");
+        System.out.println(names);
     }
 
-    ArrayList<String[]> table;
-    String[] tableColumns;
+    public void processFile() throws NullPointerException, FileNotFoundException, IOException {
 
-    public boolean processFile() throws NullPointerException{
-        try
-        {
             URL url = getClass().getClassLoader().getResource("data.csv");
             File file = new File(url.getFile());
 
@@ -41,22 +51,13 @@ public class Main {
                 table.add(line.split(","));
             }
             System.out.println(String.format("Read %s entries", table.size()));
-        }
-        catch (FileNotFoundException e){
-            System.out.println(e.getMessage());
-            return false;
-        }
-        catch (IOException e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
 
-        return true;
     }
 
     // Quantas nacionalidades (coluna `nationality`) diferentes existem no arquivo?
 	public int q1() {
-        if (processFile()){
+        try {
+            processFile();
             int nationalityIndex = Arrays.asList(tableColumns).indexOf("nationality");
             if(nationalityIndex < 0)
             {
@@ -64,24 +65,61 @@ public class Main {
                 return -1;
             }
 
-            for (String[] playerInfo :
-                    table) {
-                System.out.println(playerInfo[nationalityIndex]);
-            }
-        }
+            List<String> nationalities = table.stream().map(p -> p[nationalityIndex])
+                    .distinct().collect(Collectors.toList());
 
-        return -1;
+            return nationalities.size();
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+            return -1;
+        }
 	}
 
     // Quantos clubes (coluna `club`) diferentes existem no arquivo?
     // Obs: Existem jogadores sem clube.
 	public int q2() {
-		return 0;
+        try {
+            processFile();
+            int clubIndex = Arrays.asList(tableColumns).indexOf("club");
+            if(clubIndex < 0)
+            {
+                System.out.println("club not found");
+                return -1;
+            }
+
+            List<String> clubs = table.stream().map(p -> p[clubIndex])
+                    .filter(c -> !c.isEmpty())
+                    .distinct().collect(Collectors.toList());
+
+            return clubs.size();
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+            return -1;
+        }
 	}
 
     // Liste o primeiro nome (coluna `full_name`) dos 20 primeiros jogadores.
 	public List<String> q3() {
-		return null;
+        try {
+            processFile();
+            int full_nameIndex = Arrays.asList(tableColumns).indexOf("full_name");
+            if(full_nameIndex < 0)
+            {
+                System.out.println("club not found");
+                return null;
+            }
+
+            List<String> names = table.subList(0, 20).stream().map(p -> p[full_nameIndex])
+                    .collect(Collectors.toList());
+
+            return names;
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+            return null;
+        }
 	}
     // Quem são os top 10 jogadores que possuem as maiores cláusulas de rescisão?
     // (utilize as colunas `full_name` e `eur_release_clause`)
