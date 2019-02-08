@@ -2,26 +2,18 @@ package challenge;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.text.DateFormat;
-import java.text.FieldPosition;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,30 +25,36 @@ public class Main {
     public static void main(String[] args){
         Main main = new Main();
 
-        //int nationalities = main.q1();
-        //System.out.println(nationalities +" nationalities found.");
+//        int nationalities = main.q1();
+//        System.out.println(nationalities +" nationalities found.");
 
-        //int clubs = main.q2();
-        //System.out.println(clubs +" clubs found.");
+//        int clubs = main.q2();
+//        System.out.println(clubs +" clubs found.");
 
-        //List<String> names = main.q3();
-        //System.out.println(names.size() + " names found.");
-        //System.out.println(names);
+//
+//        List<String> names = main.q3();
+//        System.out.println(names.size() + " names found.");
+//        System.out.println(names);
 
 //        List<String> bigClausesNames = main.q4();
 //        if(bigClausesNames == null) return;
 //        System.out.println(bigClausesNames.size() + " names found.");
 //        System.out.println(bigClausesNames);
 
-        List<String> bigClausesNames = main.q5();
-        if(bigClausesNames == null) return;
-        System.out.println(bigClausesNames.size() + " names found.");
-        System.out.println(bigClausesNames);
+//        List<String> bigClausesNames = main.q5();
+//        if(bigClausesNames == null) return;
+//        System.out.println(bigClausesNames.size() + " names found.");
+//        System.out.println(bigClausesNames);
+
+        Map<Integer, Integer> map = main.q6();
+        if(map == null) return;
+        System.out.println(map);
     }
 
     public void processFile() throws NullPointerException, IOException {
 
             URL url = getClass().getClassLoader().getResource("data.csv");
+            assert url != null;
             String fileUrl = url.getFile();
             File file = new File(fileUrl);
 
@@ -75,8 +73,7 @@ public class Main {
             System.out.println(String.format("Read %s entries", table.size()));
 
     }
-
-
+    
     private int getColumnIndex(String columnName)throws Exception {
         int index = Arrays.asList(tableColumns).indexOf(columnName);
         if(index < 0){
@@ -211,21 +208,7 @@ public class Main {
                 }
             });
 
-            return playerStream.limit(10).map(p -> {
-                try{
-                    Date today = new Date();
-                    Date d = df.parse(p[bithDateIndex]);
-                    long diff = today.getTime() - d.getTime();
-                    long years = TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS) / 365;
-
-                    return p[full_nameIndex] + " - " + years + "yo";
-                }
-                catch (ParseException e){
-                    System.out.println("Error parsing birthday dates.");
-                    return "<null>";
-                }
-
-            }).collect(Collectors.toList());
+            return playerStream.limit(10).map(p -> p[full_nameIndex]).collect(Collectors.toList());
         }
         catch (Exception e){
             System.out.println(e.getMessage());
@@ -234,9 +217,31 @@ public class Main {
 	}
     // Conte quantos jogadores existem por idade. Para isso, construa um mapa onde as chaves são as idades e os valores a contagem.
     // (utilize a coluna `age`)
-
-	public Map<Integer, Integer> q6() {
-		return null;
+	public Map<Integer, Integer> q6()
+    {
+        try{
+            processFile();
+            int ageIndex = getColumnIndex("age");
+            HashMap<Integer, Integer> playersPerAge = new HashMap<>();
+            for (String[] playerInfo :
+                    table) {
+                Integer age = Integer.parseInt(playerInfo[ageIndex]);
+                if (playersPerAge.containsKey(age))
+                {
+                    int counter = playersPerAge.get(age);
+                    counter++;
+                    playersPerAge.put(age, counter);
+                }
+                else {
+                    playersPerAge.put(age, 1);
+                }
+            }
+            return playersPerAge;
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+            return null;
+        }
 	}
 
 }
